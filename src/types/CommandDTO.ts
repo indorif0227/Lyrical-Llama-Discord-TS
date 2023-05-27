@@ -1,10 +1,10 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
 
 export type CommandMetadata = {
-	builder: SlashCommandBuilder;
-	action: Function;
+  builder: SlashCommandBuilder;
+  action: (interaction: CommandInteraction) => Promise<void>;
 };
 
 export type CommandDTO = {
-	default: CommandMetadata;
+  default: CommandMetadata;
 };

@@ -6,7 +6,7 @@
   "main": "./src/index.ts",
   "scripts": {
     "start": "npm run lint && npm run build && npm run serve",
-    "lint": "npx eslint --ext .ts",
+    "lint": "npx eslint ./src --ext .ts",
     "build": "npx tsc",
     "serve": "node ./dist/index.js"
   },
