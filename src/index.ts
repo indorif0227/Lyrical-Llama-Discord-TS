@@ -23,11 +23,18 @@ if (!process.env.DISCORD_TOKEN) {
     `The "DISCORD_TOKEN" variable is not defined in the .env file.`
   );
 }
-if (!process.env.CLIENT_ID) {
-  throw new Error(`The "CLIENT_ID" variable is not defined in the .env file.`);
+if (!process.env.APP_ID) {
+  throw new Error(`The "APP_ID" variable is not defined in the .env file.`);
 }
 if (!process.env.GUILD_ID) {
   throw new Error(`The "GUILD_ID" variable is not defined in the .env file.`);
+}
+
+// Augmenting the Client type so that it is able to store a commands array as a property
+declare module 'discord.js' {
+  interface Client {
+    commands?: Collection<string, CommandMetadata>;
+  }
 }
 
 // Setting gateway intents
@@ -39,9 +46,7 @@ const intents: GatewayIntentBits[] = [
 
 // Augmenting the type for this client so we can add an array to store slash commands
 // This will allow us to access all our slash commands from any of the SlashCommandBuilder files
-const client: Client & {
-  commands?: Collection<string, CommandMetadata>;
-} = new Client({ intents });
+const client: Client = new Client({ intents });
 
 client.commands = new Collection();
 
@@ -69,9 +74,43 @@ client.once(Events.ClientReady, (client: Client) => {
   }
 });
 
-client.on(Events.InteractionCreate, (interaction: Interaction) => {
+client.on(Events.InteractionCreate, async (interaction: Interaction) => {
   if (!interaction.isChatInputCommand()) return;
-  logger.write(interaction);
+
+  const command: CommandMetadata | undefined = interaction.client.commands?.get(
+    interaction.commandName
+  );
+
+  if (command === undefined) {
+    logger.write(
+      'Received an interaction for an unregistered command',
+      MessagePrefixes.Failure
+    );
+    logger.write(interaction);
+    return;
+  }
+
+  try {
+    await command.action(interaction);
+    logger.write(
+      `'${interaction.commandName}' command executed by ${interaction.user.username}.`,
+      MessagePrefixes.Success
+    );
+    logger.write(interaction.options);
+  } catch (error) {
+    logger.write(error, MessagePrefixes.Failure);
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({
+        content: 'There was an error while executing this command!',
+        ephemeral: true,
+      });
+    } else {
+      await interaction.reply({
+        content: 'There was an error while executing this command!',
+        ephemeral: true,
+      });
+    }
+  }
 });
 
 // Load slash commands from local directory
@@ -123,10 +162,7 @@ try {
   );
 
   const data = await rest.put(
-    Routes.applicationGuildCommands(
-      process.env.CLIENT_ID,
-      process.env.GUILD_ID
-    ),
+    Routes.applicationGuildCommands(process.env.APP_ID, process.env.GUILD_ID),
     { body: commandsJSON }
   );
 
