@@ -7,13 +7,13 @@ import {
   REST,
   RESTPostAPIChatInputApplicationCommandsJSONBody,
   Routes,
-} from 'discord.js';
-import { ChatCommandDTO, ChatCommandMetadata } from './types/CommandDTO.js';
-import dotenv from 'dotenv';
-import { logger, MessagePrefixes } from './logger.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath, pathToFileURL } from 'url';
+} from "discord.js";
+import { ChatCommandDTO, ChatCommandMetadata } from "./types/CommandDTO.js";
+import dotenv from "dotenv";
+import { logger, MessagePrefixes } from "./logger.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath, pathToFileURL } from "url";
 
 dotenv.config();
 
@@ -31,7 +31,7 @@ if (!process.env.GUILD_ID) {
 }
 
 // Augmenting the Client type so that it is able to store a commands array as a property
-declare module 'discord.js' {
+declare module "discord.js" {
   interface Client {
     commands?: Collection<string, ChatCommandMetadata>;
   }
@@ -63,7 +63,7 @@ logger.write(
 client.once(Events.ClientReady, (client: Client) => {
   if (client.user === null) {
     logger.write(
-      'Something went wrong. The client does not have a username😱',
+      "Something went wrong. The client does not have a username😱",
       MessagePrefixes.Failure
     );
   } else {
@@ -87,7 +87,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
   // Handler for if the command was not found
   if (command === undefined) {
     logger.write(
-      'Received an interaction for an unregistered command',
+      "Received an interaction for an unregistered command",
       MessagePrefixes.Failure
     );
     logger.write(interaction);
@@ -106,12 +106,12 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     logger.write(error, MessagePrefixes.Failure);
     if (interaction.replied || interaction.deferred) {
       await interaction.followUp({
-        content: 'There was an error while executing this command!',
+        content: "There was an error while executing this command!",
         ephemeral: true,
       });
     } else {
       await interaction.reply({
-        content: 'There was an error while executing this command!',
+        content: "There was an error while executing this command!",
         ephemeral: true,
       });
     }
@@ -123,18 +123,18 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Getting names of folders in commands directory
-const foldersPath: string = path.join(__dirname, 'commands');
+const foldersPath: string = path.join(__dirname, "commands");
 const commandsJSON: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
 const folders: string[] = fs
   .readdirSync(foldersPath)
-  .filter((file) => !file.endsWith('.js'));
+  .filter((file) => !file.endsWith(".js"));
 
 for (const folder of folders) {
   // Getting names of the commands in each of the subfolders previously enumerated
   const commandsPath = path.join(foldersPath, folder);
   const commandFiles = fs
     .readdirSync(commandsPath)
-    .filter((file) => file.endsWith('.js'));
+    .filter((file) => file.endsWith(".js"));
 
   for (const file of commandFiles) {
     const filePath: string = pathToFileURL(
