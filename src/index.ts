@@ -8,7 +8,7 @@ import {
   RESTPostAPIChatInputApplicationCommandsJSONBody,
   Routes,
 } from 'discord.js';
-import { CommandDTO, CommandMetadata } from './types/CommandDTO.js';
+import { ChatCommandDTO, ChatCommandMetadata } from './types/CommandDTO.js';
 import dotenv from 'dotenv';
 import { logger, MessagePrefixes } from './logger.js';
 import fs from 'fs';
@@ -33,7 +33,7 @@ if (!process.env.GUILD_ID) {
 // Augmenting the Client type so that it is able to store a commands array as a property
 declare module 'discord.js' {
   interface Client {
-    commands?: Collection<string, CommandMetadata>;
+    commands?: Collection<string, ChatCommandMetadata>;
   }
 }
 
@@ -74,13 +74,17 @@ client.once(Events.ClientReady, (client: Client) => {
   }
 });
 
+// Slash command interaction handler
+// Locates the correct method to run when receiving a slash command
 client.on(Events.InteractionCreate, async (interaction: Interaction) => {
+  // Return if it's not a slash command
   if (!interaction.isChatInputCommand()) return;
 
-  const command: CommandMetadata | undefined = interaction.client.commands?.get(
-    interaction.commandName
-  );
+  // Search for the command through the client
+  const command: ChatCommandMetadata | undefined =
+    interaction.client.commands?.get(interaction.commandName);
 
+  // Handler for if the command was not found
   if (command === undefined) {
     logger.write(
       'Received an interaction for an unregistered command',
@@ -90,13 +94,14 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     return;
   }
 
+  // Attempt to run the method associated with the command and pass the relevant interaction information
   try {
     await command.action(interaction);
     logger.write(
       `'${interaction.commandName}' command executed by ${interaction.user.username}.`,
       MessagePrefixes.Success
     );
-    logger.write(interaction.options);
+    logger.write(interaction);
   } catch (error) {
     logger.write(error, MessagePrefixes.Failure);
     if (interaction.replied || interaction.deferred) {
@@ -137,7 +142,7 @@ for (const folder of folders) {
     ).toString();
 
     try {
-      const result: CommandDTO = (await import(filePath)) as CommandDTO;
+      const result: ChatCommandDTO = (await import(filePath)) as ChatCommandDTO;
       client.commands?.set(result.default.builder.name, result.default);
       // Save json versions of CommandBuilders for registration in a later step
       commandsJSON.push(result.default.builder.toJSON());

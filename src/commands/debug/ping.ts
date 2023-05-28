@@ -1,11 +1,11 @@
-import { SlashCommandBuilder, CommandInteraction } from 'discord.js';
-import { CommandMetadata } from '../../types/CommandDTO.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { ChatCommandMetadata } from '../../types/CommandDTO.js';
 
-const data: CommandMetadata = {
+const data: ChatCommandMetadata = {
   builder: new SlashCommandBuilder()
     .setName('ping')
     .setDescription('Ping the bot to see if it is awake.'),
-  action: async (interaction: CommandInteraction) => {
+  action: async (interaction: ChatInputCommandInteraction) => {
     await interaction.reply('Pong!');
     return;
   },
