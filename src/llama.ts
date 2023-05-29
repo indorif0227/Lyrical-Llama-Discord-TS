@@ -15,8 +15,8 @@ import { logger, MessagePrefixes } from "./logger.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
-import { AudioResource } from "@discordjs/voice";
 import { AudioPlayer } from "@discordjs/voice";
+import { Song } from "./types/Music.js";
 
 // Augmenting the Client type so that it is able to store a commands array as a property
 declare module "discord.js" {
@@ -24,7 +24,7 @@ declare module "discord.js" {
     commands?: Collection<string, ChatCommandMetadata>;
     commandsJSON?: RESTPostAPIChatInputApplicationCommandsJSONBody[];
     player?: AudioPlayer;
-    queue?: AudioResource[];
+    queue?: Song[];
   }
 }
 

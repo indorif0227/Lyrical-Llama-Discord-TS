@@ -10,7 +10,7 @@ import {
   NoSubscriberBehavior,
   getVoiceConnection,
 } from "@discordjs/voice";
-import ytdl from "ytdl-core";
+import { stream, video_basic_info, yt_validate } from "play-dl";
 
 const data: ChatCommandMetadata = {
   builder: new SlashCommandBuilder()
@@ -38,22 +38,24 @@ const data: ChatCommandMetadata = {
     } else {
       const url: string = interaction.options.getString("url", true);
 
-      if (!ytdl.validateURL(url)) {
+      if (!yt_validate(url)) {
         await interaction.editReply(
           "Llama found that url kinda sus.🤔 Try again with a valid one."
         );
         return;
       }
 
-      const stream = ytdl(url, { filter: "audioonly" });
-      // const metadata = await ytdl.getInfo(url);
-
+      const data = await stream(url, { discordPlayerCompatibility: true });
+      const audio = createAudioResource(data.stream, { inputType: data.type });
+      const info = await video_basic_info(url);
       const client = interaction.client;
       const connection = getVoiceConnection(interaction.guild.id);
 
       if (!client.queue) {
         client.queue = [];
       }
+      client.queue.push({ info, audio });
+
       if (!connection) {
         await interaction.editReply(
           "You can teach a Llama to be a DJ, but you have to lead it to the venue first.💿 (trans. use the join command to add the Llama to a voice channel first)"
@@ -61,13 +63,14 @@ const data: ChatCommandMetadata = {
         return;
       }
 
-      client.queue.push(createAudioResource(stream));
       client.player = createAudioPlayer({
         behaviors: { noSubscriber: NoSubscriberBehavior.Play },
       });
       connection.subscribe(client.player);
-      client.player.play(client.queue.splice(0, 1)[0]);
-      await interaction.editReply(`▶ Now Playing - [Song title here]`);
+      client.player.play(client.queue.splice(0, 1)[0].audio);
+      await interaction.editReply(
+        `▶ Now Playing - ${info.video_details.title ?? "No Title"}`
+      );
       return;
     }
   },
