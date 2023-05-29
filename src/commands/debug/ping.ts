@@ -6,7 +6,9 @@ const data: ChatCommandMetadata = {
     .setName("ping")
     .setDescription("Ping to see if the Llama is awake."),
   action: async (interaction: ChatInputCommandInteraction) => {
-    await interaction.reply("Pong!🏓");
+    await interaction.reply(
+      `🏓Pong! (Latency: ${Date.now() - interaction.createdTimestamp}ms)`
+    );
     return;
   },
 };

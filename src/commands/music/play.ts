@@ -8,9 +8,9 @@ import {
   createAudioResource,
   createAudioPlayer,
   NoSubscriberBehavior,
+  getVoiceConnection,
 } from "@discordjs/voice";
 import ytdl from "ytdl-core";
-import { logger } from "../../logger.js";
 
 const data: ChatCommandMetadata = {
   builder: new SlashCommandBuilder()
@@ -24,7 +24,12 @@ const data: ChatCommandMetadata = {
     }),
   action: async (interaction: ChatInputCommandInteraction) => {
     await interaction.deferReply();
-
+    if (!interaction.guild) {
+      await interaction.editReply(
+        "🛑This command can only be used in a guild."
+      );
+      return;
+    }
     if (interaction.client.voice.adapters.size === 0) {
       await interaction.editReply(
         "Llama is not currently in a voice channel, so no one will be able to hear the music.😢"
@@ -40,17 +45,18 @@ const data: ChatCommandMetadata = {
         return;
       }
 
-      const stream = ytdl(url, {});
-      //   const metadata = await ytdl.getInfo(url);
+      const stream = ytdl(url, { filter: "audioonly" });
+      // const metadata = await ytdl.getInfo(url);
 
       const client = interaction.client;
+      const connection = getVoiceConnection(interaction.guild.id);
 
       if (!client.queue) {
         client.queue = [];
       }
-      if (!client.voiceConnection) {
+      if (!connection) {
         await interaction.editReply(
-          "You can teach a Llama to be a DJ, but you have to lead it to the venue first.💿 (use the join command to add the Llama to a voice channel first)"
+          "You can teach a Llama to be a DJ, but you have to lead it to the venue first.💿 (trans. use the join command to add the Llama to a voice channel first)"
         );
         return;
       }
@@ -59,11 +65,8 @@ const data: ChatCommandMetadata = {
       client.player = createAudioPlayer({
         behaviors: { noSubscriber: NoSubscriberBehavior.Play },
       });
-      client.voiceConnection.subscribe(client.player);
-      logger.write(client.queue);
+      connection.subscribe(client.player);
       client.player.play(client.queue.splice(0, 1)[0]);
-      logger.write(client.player);
-      logger.write(client.voiceConnection);
       await interaction.editReply(`▶ Now Playing - [Song title here]`);
       return;
     }

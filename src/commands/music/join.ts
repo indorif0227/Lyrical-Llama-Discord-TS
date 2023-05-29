@@ -27,7 +27,7 @@ const data: ChatCommandMetadata = {
     const channel = interaction.options.getChannel("channel", true);
 
     if (interaction.guild) {
-      interaction.client.voiceConnection = joinVoiceChannel({
+      joinVoiceChannel({
         channelId: channel.id,
         guildId: interaction.guild.id,
         adapterCreator: interaction.guild.voiceAdapterCreator,
