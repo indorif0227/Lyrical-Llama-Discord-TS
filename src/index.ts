@@ -14,6 +14,7 @@ import { logger, MessagePrefixes } from "./logger.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
+import { VoiceConnection } from "@discordjs/voice";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ if (!process.env.GUILD_ID) {
 declare module "discord.js" {
   interface Client {
     commands?: Collection<string, ChatCommandMetadata>;
+    voiceConnection?: VoiceConnection;
   }
 }
 

@@ -15,22 +15,20 @@ const data: ChatCommandMetadata = {
     .setDescription("Retrieves info about a user.")
     .addUserOption((option: SlashCommandUserOption) => {
       option.setName("user");
-      option.setDescription("The user to retrieve information about.");
+      option.setDescription("The user to retrieve information on.");
       option.setRequired(true);
       return option;
     })
     .addBooleanOption((option: SlashCommandBooleanOption) => {
       option.setName("private");
-      option.setDescription("The response will only be visible to you.");
+      option.setDescription("Wether the response will only be visible to you.");
       return option;
     }),
   action: async (interaction: ChatInputCommandInteraction) => {
     await interaction.deferReply({
       ephemeral: interaction.options.getBoolean("private") ?? false,
     });
-    if (!interaction.member) {
-      throw new Error("User argument not found.");
-    }
+
     const user: User = interaction.options.getUser("user", true);
     const fields: APIEmbedField[] = [
       { name: "User ID", value: user.id ?? "Not Found" },
