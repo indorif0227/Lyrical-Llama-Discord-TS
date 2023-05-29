@@ -14,7 +14,8 @@ import { logger, MessagePrefixes } from "./logger.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
-import { VoiceConnection } from "@discordjs/voice";
+import { AudioResource, VoiceConnection } from "@discordjs/voice";
+import { AudioPlayer } from "@discordjs/voice";
 
 dotenv.config();
 
@@ -36,6 +37,8 @@ declare module "discord.js" {
   interface Client {
     commands?: Collection<string, ChatCommandMetadata>;
     voiceConnection?: VoiceConnection;
+    player?: AudioPlayer;
+    queue?: AudioResource[];
   }
 }
 
@@ -103,7 +106,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
       `'${interaction.commandName}' command executed by ${interaction.user.username}.`,
       MessagePrefixes.Success
     );
-    logger.write(interaction);
+    // logger.write(interaction);
   } catch (error) {
     logger.write(error, MessagePrefixes.Failure);
     if (interaction.replied || interaction.deferred) {

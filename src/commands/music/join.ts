@@ -14,23 +14,17 @@ const data: ChatCommandMetadata = {
     .addChannelOption((option: SlashCommandChannelOption) => {
       option.setName("channel");
       option.setDescription("The voice channel to join.");
+      option.addChannelTypes(
+        ChannelType.GuildVoice,
+        ChannelType.GuildStageVoice
+      );
       option.setRequired(true);
       return option;
     }),
   action: async (interaction: ChatInputCommandInteraction) => {
     await interaction.deferReply();
 
-    // We know that this will be populated because of the requirement
-    // set in the slash command builder
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const channel = interaction.options.getChannel("channel")!;
-
-    if (!(channel.type == ChannelType.GuildVoice)) {
-      await interaction.editReply(
-        "The channel specified is not a valid voice channel."
-      );
-      return;
-    }
+    const channel = interaction.options.getChannel("channel", true);
 
     if (interaction.guild) {
       interaction.client.voiceConnection = joinVoiceChannel({
@@ -38,9 +32,10 @@ const data: ChatCommandMetadata = {
         guildId: interaction.guild.id,
         adapterCreator: interaction.guild.voiceAdapterCreator,
       });
+
       await interaction.editReply("It's Llama time!🎺🦙🎷");
     } else {
-      await interaction.editReply("This slash command only works in guilds.");
+      await interaction.editReply("This slash command only works in guilds.🤷‍♂️");
       return;
     }
   },

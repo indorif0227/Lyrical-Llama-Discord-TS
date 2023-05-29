@@ -7,13 +7,14 @@ const data: ChatCommandMetadata = {
     .setDescription("Shoos the Llama from any channels he is currently in."),
   action: async (interaction: ChatInputCommandInteraction) => {
     await interaction.deferReply();
-    if (interaction.client.voiceConnection) {
-      interaction.client.voiceConnection.destroy();
-
-      await interaction.editReply("The Llama has left the venue.");
+    const client = interaction.client;
+    if (client.voiceConnection) {
+      client.player?.pause();
+      client.voiceConnection.destroy();
+      await interaction.editReply("The Llama has left the venue.🦙💨");
     } else {
       await interaction.editReply(
-        "The Llama is not currently in any voice channels."
+        "The Llama is not currently in any voice channels.💤"
       );
     }
     return;
