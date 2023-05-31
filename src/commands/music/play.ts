@@ -2,49 +2,19 @@ import {
   ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandBuilder,
-  SlashCommandStringOption,
-  SlashCommandSubcommandBuilder,
 } from "discord.js";
 import { ChatCommandMetadata } from "../../types/CommandDTO.js";
-import { logger } from "../../logger.js";
-import { useMasterPlayer } from "discord-player";
+import { Track, useMasterPlayer } from "discord-player";
 
 const data: ChatCommandMetadata = {
   builder: new SlashCommandBuilder()
     .setName("play")
     .setDescription("Joins the voice channel you are in and plays some tunes.")
-    .addSubcommand((subcommand: SlashCommandSubcommandBuilder) => {
-      return subcommand
-        .setName("search")
-        .setDescription("Search for a song by keyword.")
-        .addStringOption((option: SlashCommandStringOption) => {
-          return option
-            .setName("query")
-            .setDescription("Keywords to search for.")
-            .setRequired(true);
-        });
-    })
-    .addSubcommand((subcommand: SlashCommandSubcommandBuilder) => {
-      return subcommand
-        .setName("playlist")
-        .setDescription("Plays an entire playlist of songs from a url.")
-        .addStringOption((option: SlashCommandStringOption) => {
-          return option
-            .setName("url")
-            .setDescription("The url of the playlist you want to play.")
-            .setRequired(true);
-        });
-    })
-    .addSubcommand((subcommand: SlashCommandSubcommandBuilder) => {
-      return subcommand
-        .setName("song")
-        .setDescription("Plays a song from a url.")
-        .addStringOption((option: SlashCommandStringOption) => {
-          return option
-            .setName("url")
-            .setDescription("The url of the song you want to play.")
-            .setRequired(true);
-        });
+    .addStringOption((option) => {
+      return option
+        .setName("query")
+        .setDescription("Accepts song url, playlist url, or song name")
+        .setRequired(true);
     }),
   execute: async (interaction: ChatInputCommandInteraction) => {
     await interaction.deferReply();
@@ -71,22 +41,14 @@ const data: ChatCommandMetadata = {
     // Fetch our player object that was created on client startup
     const player = useMasterPlayer();
 
-    // Handle the song request appropriately based on the subcommand used
-    const subcommand: string = interaction.options.getSubcommand();
-
-    const query =
-      interaction.options.getString(
-        subcommand === "search" ? "query" : "url"
-      ) ?? "";
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const query = interaction.options.getString("query")!;
 
     // Search for the user's query
     const result = await player?.search(query, {
       requestedBy: interaction.user,
-      ignoreCache: true,
-      searchEngine: "AUTO_SEARCH",
+      searchEngine: `youtubeSearch`,
     });
-
-    logger.write(result?.toJSON());
 
     if (!result) {
       throw new Error("Nothing was returned from search(query).");
@@ -94,22 +56,43 @@ const data: ChatCommandMetadata = {
 
     if (result.tracks.length === 0) {
       await interaction.editReply(
-        `❔No results were found for the ${subcommand}`
+        `❔No results were found for the query \`${query}\``
       );
       return;
     }
 
+    const track: Track = result.tracks[0];
     // Create embed to display once the music starts
     const embed: EmbedBuilder = new EmbedBuilder()
       .setColor(0xeb3371)
-      .setTitle(`▶ Now Playing - [${result.tracks[0].title}]`)
-      .setThumbnail(result.tracks[0].thumbnail)
-      .addFields([{ name: "Description", value: result.tracks[0].description }])
+      .setAuthor({ name: `${track.author}` })
+      .setTitle(track.title)
+      .setURL(track.url)
+      .setDescription("🎶 Added to Queue")
+      .setThumbnail(track.thumbnail)
+      .addFields([
+        {
+          name: "Requested by",
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          value: `<@${interaction.member!.user.id}>`,
+          inline: true,
+        },
+        {
+          name: "Duration",
+          value: track.duration,
+          inline: true,
+        },
+        {
+          name: "Views",
+          value: track.views.toLocaleString(),
+          inline: true,
+        },
+      ])
       .setTimestamp();
 
     await interaction.editReply({ embeds: [embed] });
 
-    await player?.play(channel, result);
+    await player?.play(channel, result.tracks[0]);
     return;
   },
 };

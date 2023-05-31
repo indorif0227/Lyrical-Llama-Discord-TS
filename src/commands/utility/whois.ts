@@ -1,5 +1,4 @@
 import {
-  APIEmbedField,
   ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandBooleanOption,
@@ -30,27 +29,26 @@ const data: ChatCommandMetadata = {
     });
 
     const user: User = interaction.options.getUser("user", true);
-    const fields: APIEmbedField[] = [
-      { name: "User ID", value: user.id ?? "Not Found" },
-      {
-        name: "User Creation Date",
-        value: user.createdAt.toLocaleDateString() ?? "Not Found",
-      },
-      {
-        name: "Avatar",
-        value: user.avatarURL({ size: 4096 }) ?? "Not Found",
-      },
-      {
-        name: "Display Avatar",
-        value: user.displayAvatarURL({ size: 4096 }) ?? "Not Found",
-      },
-      { name: "Banner", value: user.bannerURL() ?? "Not Found" },
-    ];
     const embed = new EmbedBuilder()
       .setColor(0xeb3371)
       .setTitle(`${user.username} #${user.discriminator}`)
       .setThumbnail(user.avatarURL())
-      .addFields(fields)
+      .addFields([
+        { name: "User ID", value: user.id ?? "Not Found" },
+        {
+          name: "User Creation Date",
+          value: user.createdAt.toLocaleDateString() ?? "Not Found",
+        },
+        {
+          name: "Avatar",
+          value: user.avatarURL({ size: 4096 }) ?? "Not Found",
+        },
+        {
+          name: "Display Avatar",
+          value: user.displayAvatarURL({ size: 4096 }) ?? "Not Found",
+        },
+        { name: "Banner", value: user.bannerURL() ?? "Not Found" },
+      ])
       .setTimestamp();
 
     await interaction.editReply({ embeds: [embed] });

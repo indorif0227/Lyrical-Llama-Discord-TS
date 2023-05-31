@@ -16,7 +16,7 @@ import { logger, MessagePrefixes } from "./logger.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
-import { Player} from "discord-player";
+import { Player } from "discord-player";
 
 dotenv.config();
 
@@ -63,12 +63,13 @@ logger.write(
 );
 
 // Client event handlers
-client.on("error", (error) => {
-  logger.write(error, MessagePrefixes.Failure);
-});
-client.on("debug", (message) => {
-  logger.write(message), MessagePrefixes.Debug;
-});
+
+// client.on("error", (error) => {
+//   logger.write(error, MessagePrefixes.Failure);
+// });
+// client.on("debug", (message) => {
+//   logger.write(message), MessagePrefixes.Debug;
+// });
 
 client.once(Events.ClientReady, (client: Client) => {
   if (client.user === null) {
@@ -204,22 +205,24 @@ for (const folder of folders) {
 }
 
 // Create audio player and add event listeners
-const player = new Player(client);
+const player = new Player(client, {
+  ytdlOptions: { quality: "highestaudio", highWaterMark: 1 << 25 },
+});
 await player.extractors.loadDefault();
 
-player.events.on("error", (queue, error) => {
-  logger.write(queue, MessagePrefixes.Failure);
-  logger.write(error, MessagePrefixes.Failure);
-});
-player.events.on("playerError", (queue, error, track) => {
-  logger.write(queue, MessagePrefixes.Failure);
-  logger.write(track, MessagePrefixes.Failure);
-  logger.write(error, MessagePrefixes.Failure);
-});
-player.events.on("debug", (queue, message) => {
-  logger.write(queue, MessagePrefixes.Debug);
-  logger.write(message, MessagePrefixes.Debug);
-});
+// player.events.on("error", (queue, error) => {
+//   logger.write(queue, MessagePrefixes.Failure);
+//   logger.write(error, MessagePrefixes.Failure);
+// });
+// player.events.on("playerError", (queue, error, track) => {
+//   logger.write(queue, MessagePrefixes.Failure);
+//   logger.write(track, MessagePrefixes.Failure);
+//   logger.write(error, MessagePrefixes.Failure);
+// });
+// player.events.on("debug", (queue, message) => {
+//   logger.write(queue, MessagePrefixes.Debug);
+//   logger.write(message, MessagePrefixes.Debug);
+// });
 
 // Client comes online!
 await client.login(process.env.DISCORD_TOKEN);
