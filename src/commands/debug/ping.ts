@@ -5,7 +5,7 @@ const data: ChatCommandMetadata = {
   builder: new SlashCommandBuilder()
     .setName("ping")
     .setDescription("Ping to see if the Llama is awake."),
-  action: async (interaction: ChatInputCommandInteraction) => {
+  execute: async (interaction: ChatInputCommandInteraction) => {
     await interaction.reply(
       `🏓Pong! (Latency: ${Date.now() - interaction.createdTimestamp}ms)`
     );

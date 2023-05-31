@@ -15,7 +15,7 @@ export type ChatCommandMetadata = {
     | "addSubcommandGroup"
     | "addSubcommand"
   >;
-  action: (interaction: ChatInputCommandInteraction) => Promise<void>;
+  execute: (interaction: ChatInputCommandInteraction) => Promise<void>;
 };
 
 export type ChatCommandDTO = {

@@ -24,7 +24,7 @@ const data: ChatCommandMetadata = {
       option.setDescription("Wether the response will only be visible to you.");
       return option;
     }),
-  action: async (interaction: ChatInputCommandInteraction) => {
+  execute: async (interaction: ChatInputCommandInteraction) => {
     await interaction.deferReply({
       ephemeral: interaction.options.getBoolean("private") ?? false,
     });
