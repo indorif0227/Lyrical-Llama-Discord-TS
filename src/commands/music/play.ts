@@ -2,19 +2,33 @@ import {
   ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandBuilder,
+  SlashCommandStringOption,
 } from "discord.js";
 import { ChatCommandMetadata } from "../../types/CommandDTO.js";
-import { Track, useMasterPlayer } from "discord-player";
+import { SearchOptions, Track, useMasterPlayer } from "discord-player";
 
 const data: ChatCommandMetadata = {
   builder: new SlashCommandBuilder()
     .setName("play")
     .setDescription("Joins the voice channel you are in and plays some tunes.")
-    .addStringOption((option) => {
+    .addStringOption((option: SlashCommandStringOption) => {
       return option
         .setName("query")
         .setDescription("Accepts song url, playlist url, or song name")
         .setRequired(true);
+    })
+    .addStringOption((option: SlashCommandStringOption) => {
+      return option
+        .setName("service")
+        .setDescription(
+          "Select which service you want to query the audio from. (Defaults to YouTube if not set)"
+        )
+        .setChoices(
+          { name: "YouTube", value: "YouTube" },
+          { name: "Spotify", value: "Spotify" },
+          { name: "Apple Music", value: "Apple Music" },
+          { name: "SoundCloud", value: "Sound Cloud" }
+        );
     }),
   execute: async (interaction: ChatInputCommandInteraction) => {
     await interaction.deferReply();
@@ -25,6 +39,8 @@ const data: ChatCommandMetadata = {
       );
       return;
     }
+
+    console.log();
 
     // Get channel the user is currently in
     const channel = interaction.guild.members.cache.get(
@@ -44,10 +60,27 @@ const data: ChatCommandMetadata = {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const query = interaction.options.getString("query")!;
 
+    let searchEngine: SearchOptions["searchEngine"] = "youtubeSearch";
+
+    switch (interaction.options.getString("service")) {
+      case "YouTube":
+        searchEngine = "youtubeSearch";
+        break;
+      case "Spotify":
+        searchEngine = "spotifySearch";
+        break;
+      case "Apple Music":
+        searchEngine = "appleMusicSearch";
+        break;
+      case "SoundCloud":
+        searchEngine = "soundcloudSearch";
+        break;
+    }
+
     // Search for the user's query
     const result = await player?.search(query, {
       requestedBy: interaction.user,
-      searchEngine: `youtubeSearch`,
+      searchEngine: searchEngine,
     });
 
     if (!result) {

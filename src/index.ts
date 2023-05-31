@@ -99,8 +99,6 @@ client.once(Events.ClientReady, (client: Client) => {
     for (const item of client.guilds.cache) {
       const guild: Guild = item[1];
 
-      logger.write(guild.name, MessagePrefixes.Neutral);
-
       rest
         .put(Routes.applicationGuildCommands(process.env.APP_ID, guild.id), {
           body: commandsJSON,
@@ -109,7 +107,7 @@ client.once(Events.ClientReady, (client: Client) => {
           const commands = data as RESTPutAPIApplicationGuildCommandsResult;
           for (const command of commands) {
             logger.write(
-              `'${command.name}' has been loaded correctly: ${command.description} - ${command.id}`,
+              `'${command.name}' has been loaded | Guild: ${guild.name} | Command Id: ${command.id}`,
               MessagePrefixes.Success
             );
           }
