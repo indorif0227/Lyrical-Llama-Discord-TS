@@ -1,8 +1,21 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 export type ChatCommandMetadata = {
-  builder: Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>;
-  action: (interaction: ChatInputCommandInteraction) => Promise<void>;
+  builder: Omit<
+    SlashCommandBuilder,
+    | "addBooleanOption"
+    | "addUserOption"
+    | "addChannelOption"
+    | "addRoleOption"
+    | "addAttachmentOption"
+    | "addMentionableOption"
+    | "addStringOption"
+    | "addIntegerOption"
+    | "addNumberOption"
+    | "addSubcommandGroup"
+    | "addSubcommand"
+  >;
+  execute: (interaction: ChatInputCommandInteraction) => Promise<void>;
 };
 
 export type ChatCommandDTO = {

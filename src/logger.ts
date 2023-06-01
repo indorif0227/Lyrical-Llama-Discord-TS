@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-import util from 'util';
+import util from "util";
 
 export enum MessagePrefixes {
-  Success = '+',
-  Failure = 'x',
-  Neutral = '=',
-  Warning = '!',
-  Debug = '%',
+  Success = "+",
+  Failure = "x",
+  Neutral = "=",
+  Warning = "!",
+  Debug = "%",
 }
 
 class Logger {
@@ -21,7 +21,7 @@ class Logger {
     const timestamp = `${time.getMonth()}-${time.getDate()}-${time.getFullYear()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}.${time.getMilliseconds()}`;
 
     const output =
-      typeof message == 'object'
+      typeof message == "object"
         ? util.inspect(message, {
             showHidden: false,
             depth: null,
