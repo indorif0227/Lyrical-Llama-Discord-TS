@@ -125,7 +125,22 @@ const data: ChatCommandMetadata = {
 
     await interaction.editReply({ embeds: [embed] });
 
-    await player?.play(channel, result.tracks[0]);
+    await player?.play(channel, result, {
+      nodeOptions: {
+        metadata: {
+          channel: interaction.channel,
+          client: interaction.guild.members.me,
+          requestedBy: interaction.user,
+        },
+        selfDeaf: true,
+        volume: 80,
+        leaveOnEmpty: true,
+        leaveOnEmptyCooldown: 300000,
+        leaveOnEnd: true,
+        leaveOnEndCooldown: 300000,
+      },
+    });
+
     return;
   },
 };
